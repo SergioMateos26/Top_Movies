@@ -49,7 +49,8 @@
 
                             echo "<span style='color: LimeGreen;'>Has actualizado la pelicula con el ISAN: $key</span><br>";
                         }
-                    }else{
+                    }
+                    else{
                         //Caso 3
                         if(($pelicula->getNombre() != "") && ($pelicula->getIsan() == "")){
                             //echo "Si sólo el ISAN está vacío mostrará la lista de películas que contienen ese nombre" <br>;
@@ -143,7 +144,7 @@
 
 
     <h1 style="text-decoration: underline;">Hola usuario: <?php { echo $_POST["usuario"] ; } ?></h1>
-    <h3>Añade una pelicula:</h3><br>
+    <h3>Ejercicio usando POST:</h3><br>
 
 
     <form action="TopPeliculas.php" method="post">
@@ -156,7 +157,7 @@
             <input type="date" id="anio" name="anio" min="1960-01-01" max="2024-01-01" value="<?php if(isset($_POST['anio'])){ echo htmlentities($_POST['anio']);}else{ echo '';} ?>">
         <br>
         <p>Puntuacion:</p>
-        <select name="combo">
+        <select name="combo" >
             <option value="">0</option>
             <option value="1">1</option>
             <option value="2">2</option>
