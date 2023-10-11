@@ -26,55 +26,66 @@
         }
 
         public function anadirPelicula($pelicula){
-            if (($pelicula->getNombre() == "") && ($pelicula->getIsan() == "")) {
-                //Caso 1
-                //Si el nombre y el ISAN está vacío, se mostrará una advertencia
-                unset($this->peliculaArray[null]);
-                echo "<span style='color: red;'>Los campos Nombre y Isan estan vacios</span><br>";
-            }else{
-                foreach ($this->peliculaArray as $key => $value){
-                    if($key==$pelicula->getIsan()){
-                        //Caso 5
-                        if($pelicula->getNombre() == ""){
-                            //echo "Si el usuario introduce un número ISAN y no deja el nombre de la película vacío, la película se eliminará de la lista.<br>";
-                            echo "<span style='color: LimeGreen;'>Has eliminado la pelicula con el ISAN: $key</span><br>";
-                            unset($this->peliculaArray[$pelicula->getIsan()]);
-                        }
-                        if($pelicula->getNombre() != "" && $pelicula->getAño() != "" && $pelicula->getPuntuacion()){
-                            //Caso 4
-                            //echo "Si el número ISAN que se introdujo YA existe en la lista y el resto de apartados no están vacíos se actualizará con la información introducida en el formulario.<br>";
-                            $value->setNombre($pelicula->getNombre());
-                            $value->getAño($pelicula->getAño());
-                            $value->getPuntuacion($pelicula->getPuntuacion());
-
-                            echo "<span style='color: LimeGreen;'>Has actualizado la pelicula con el ISAN: $key</span><br>";
+            if ($pelicula->getNombre() == "" && $pelicula->getIsan() == "") {
+                // Caso 1: Si el nombre y el ISAN están vacíos, se mostrará una advertencia
+                echo "<span style='color: red;'>Los campos Nombre y ISAN están vacíos</span><br>";
+            } else {
+                if ($pelicula->getIsan() == "") {
+                    // Caso 3: Si el ISAN está vacío y el nombre no, mostrar la lista de películas con ese nombre
+                    $nombreBuscado = strtolower($pelicula->getNombre()); // Convertir el nombre a minúsculas para comparar sin distinción de mayúsculas y minúsculas
+                    $encontradas = [];
+        
+                    foreach ($this->peliculaArray as $key => $value) {
+                        $nombrePelicula = strtolower($value->getNombre());
+                        if (strpos($nombrePelicula, $nombreBuscado) !== false) {
+                            // La película contiene el nombre buscado
+                            $encontradas[] = $value;
                         }
                     }
-                    else{
-                        //Caso 3
-                        if(($pelicula->getNombre() != "") && ($pelicula->getIsan() == "")){
-                            //echo "Si sólo el ISAN está vacío mostrará la lista de películas que contienen ese nombre" <br>;
-                            if(str_contains($value->getNombre(),$pelicula->getNombre())){
-                                echo "<table>";
-                                    echo "<tr><th>Nombre</th><th>Año</th><th>Puntuación</th></tr>";
-
-                                        echo "<tr>";
-                                        echo "<td>" . $value->getNombre() . "</td>";
-                                        echo "<td>" . $value->getAño() . "</td>";
-                                        echo "<td>" . $value->getPuntuacion() . "</td>";
-                                        echo "</tr>";
-
-                                echo "</table>";
-
-                                unset($this->peliculaArray[null]);
-                            }
-                        }else{
-                            $this->peliculaArray[$pelicula->getIsan()]=$pelicula;
+        
+                    if (!empty($encontradas)) {
+                        // Mostrar la lista de películas encontradas
+                        echo "<table>";
+                        echo "<tr><th>Nombre</th><th>Año</th><th>Puntuación</th></tr>";
+                        foreach ($encontradas as $peliculaEncontrada) {
+                            echo "<tr>";
+                            echo "<td>" . $peliculaEncontrada->getNombre() . "</td>";
+                            echo "<td>" . $peliculaEncontrada->getAño() . "</td>";
+                            echo "<td>" . $peliculaEncontrada->getPuntuacion() . "</td>";
+                            echo "</tr>";
+                        }
+                        echo "</table>";
+                    } else {
+                        // No se encontraron películas con el nombre buscado
+                        echo "<span style='color: red;'>No se encontraron películas con el nombre buscado.</span><br>";
+                    }
+        
+                } else {
+                    $key = $pelicula->getIsan();
+                    if (isset($this->peliculaArray[$key])) {
+                        // Caso 5: Actualizar la película existente si el ISAN ya existe en la lista
+                        if ($pelicula->getNombre() == "") {
+                            // Si el nombre está vacío, elimina la película
+                            unset($this->peliculaArray[$key]);
+                            echo "<span style='color: LimeGreen;'>Has eliminado la película con el ISAN: $key</span><br>";
+                        } else {
+                            // Si el nombre no está vacío, actualiza la película con los nuevos datos
+                            $this->peliculaArray[$key]->setNombre($pelicula->getNombre());
+                            $this->peliculaArray[$key]->setAño($pelicula->getAño());
+                            $this->peliculaArray[$key]->setPuntuacion($pelicula->getPuntuacion());
+                            echo "<span style='color: LimeGreen;'>Has actualizado la película con el ISAN: $key</span><br>";
+                        }
+                    } else {
+                        // Caso 4: Agregar la película si no existe en la lista y al menos uno de los campos no está vacío
+                        if ($pelicula->getNombre() != "" || $pelicula->getIsan() != "") {
+                            $this->peliculaArray[$key] = $pelicula;
                         }
                     }
-                } 
+                }
             }
         }
+        
+        
 
 
         //metodo para convertir el Array en String
@@ -93,7 +104,7 @@
             $array=explode("/",$texto);
             for ($i=0; $i < count($array); $i++) { 
                 $array_peli=explode(",",$array[$i]);
-                if($array[$i]!="" || $texto=""){
+                if($array[$i]!="" || $texto==""){
                     $peli=new Pelicula($array_peli[0],$array_peli[1],$array_peli[2],$array_peli[3]);
                     $this->peliculaArray[$array_peli[0]]=$peli;
                 }
@@ -154,7 +165,7 @@
             <input type="text" id="ISAN" name="ISAN" value="<?php if(isset($_POST['ISAN'])){ echo htmlentities($_POST['ISAN']);}else{ echo '';} ?>">
         <br>
         <p>Anio:</p>
-            <input type="date" id="anio" name="anio" min="1960-01-01" max="2024-01-01" value="<?php if(isset($_POST['anio'])){ echo htmlentities($_POST['anio']);}else{ echo '';} ?>">
+        <input type="number" id="anio" name="anio" min="1960" max="<?php echo date("Y"); ?>" value="<?php if(isset($_POST['anio'])){ echo htmlentities($_POST['anio']);}else{ echo '';} ?>">
         <br>
         <p>Puntuacion:</p>
         <select name="combo" >
@@ -166,7 +177,7 @@
             <option value="5">5</option>
         </select>
         <br><br>
-        <button type="submit">Añadir</button><br><br>
+        <button type="submit" name="enviar">Añadir</button><br><br>
         <?php echo "<input type='hidden' name='usuario' value='".$_POST['usuario']."'>" ?>
 
 
